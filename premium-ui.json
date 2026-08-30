@@ -1,0 +1,17 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": ["src"],
+  "locale": "en",
+  "canonicalMap": "UX-CONTRACT.md",
+  "requiredCapabilities": ["Form", "Scrollbar"],
+  "requiredCommands": ["unit", "e2e", "accessibility", "premium"],
+  "commands": {
+    "unit": "npm.cmd test",
+    "e2e": "npm.cmd run test:e2e",
+    "accessibility": "npm.cmd run test:a11y",
+    "premium": "npm.cmd run verify:premium"
+  },
+  "evidence": {
+    "failurePaths": "tests/e2e/application.spec.ts"
+  }
+}
