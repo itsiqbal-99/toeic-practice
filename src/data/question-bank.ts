@@ -7,6 +7,7 @@ import type {
   QuestionUnit,
   Skill,
 } from "@/features/test/types";
+import { publicAssetPath } from "@/config/app";
 
 const IDS: Choice["id"][] = ["A", "B", "C", "D"];
 
@@ -16,7 +17,7 @@ function choices(...texts: string[]): Choice[] {
 
 function clips(unitId: string, lines: Array<[string, string]>): AudioClip[] {
   return lines.map(([speaker, text], index) => ({
-    src: `/audio/${unitId}-${String(index + 1).padStart(2, "0")}.mp3`,
+    src: publicAssetPath(`/audio/${unitId}-${String(index + 1).padStart(2, "0")}.mp3`),
     speaker,
     text,
   }));
@@ -64,7 +65,7 @@ const photographUnits: QuestionUnit[] = photoData.map((item, index) => {
     section: "listening",
     part: "photographs",
     instruction: "Look at the photograph. Choose the statement that best describes what you see.",
-    stimulus: { kind: "image-audio", image: `/images/questions/${item.scene}.webp`, alt: item.alt, audio: { clips: clips(id, lines) }, transcript: transcript(lines) },
+    stimulus: { kind: "image-audio", image: publicAssetPath(`/images/questions/${item.scene}.webp`), alt: item.alt, audio: { clips: clips(id, lines) }, transcript: transcript(lines) },
     questions: [makeQuestion(`${id}-q1`, "Choose the best description.", item.statements, item.answer, `Statement ${item.answer} directly describes the visible action or arrangement.`, "easy", ["listening-comprehension", "detail"])],
   };
 });

@@ -2,9 +2,11 @@ import { existsSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { QUESTION_BANK } from "@/data/question-bank";
+import { APP_BASE_PATH } from "@/config/app";
 
 function publicFile(source: string): string {
-  return path.join(process.cwd(), "public", source.replace(/^\//, ""));
+  const relativeSource = source.slice(APP_BASE_PATH.length).replace(/^\//, "");
+  return path.join(process.cwd(), "public", relativeSource);
 }
 
 describe("bundled question media", () => {
@@ -23,6 +25,7 @@ describe("bundled question media", () => {
 
     expect([...sources].filter((source) => source.endsWith(".webp"))).toHaveLength(9);
     expect([...sources].filter((source) => source.endsWith(".mp3"))).toHaveLength(64);
+    expect([...sources].every((source) => source.startsWith(`${APP_BASE_PATH}/`))).toBe(true);
 
     for (const source of sources) {
       const file = publicFile(source);

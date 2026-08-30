@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. A candidate name is the only required input. One active attempt and the latest immutable result are stored in browser `localStorage`; there is no account or database.
+Open `http://localhost:3000/toeic-practice/`. A candidate name is the only required input. One active attempt and the latest immutable result are stored in browser `localStorage`; there is no account or database.
 
 ## Quality checks
 

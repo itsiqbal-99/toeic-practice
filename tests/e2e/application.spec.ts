@@ -1,7 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+const APP_BASE_PATH = "/toeic-practice/";
+
 test.beforeEach(async ({ page }) => {
-  await page.goto("/");
+  await page.goto(APP_BASE_PATH);
   await page.evaluate(() => localStorage.clear());
   await page.reload();
 });
@@ -12,7 +14,7 @@ test("validates the candidate name and resumes saved progress", async ({ page })
 
   await page.getByLabel("Candidate name").fill("Morgan Ellis");
   await page.getByRole("button", { name: "Start practice test" }).click();
-  await expect(page).toHaveURL(/\/test$/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/test\/?$/, { timeout: 15_000 });
   await expect(page.getByText("Question 1", { exact: false }).first()).toBeVisible();
 
   await page.getByRole("radio").first().check();
@@ -20,7 +22,7 @@ test("validates the candidate name and resumes saved progress", async ({ page })
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await page.reload();
   await expect(page.getByText("Question 2", { exact: false }).first()).toBeVisible();
-  await page.goto("/");
+  await page.goto(APP_BASE_PATH);
   await expect(page.getByRole("button", { name: /Resume test/ })).toBeVisible();
   await expect(page.getByText("Morgan Ellis")).toBeVisible();
 });
@@ -28,7 +30,7 @@ test("validates the candidate name and resumes saved progress", async ({ page })
 test("submits an incomplete attempt and opens answer review", async ({ page }) => {
   await page.getByLabel("Candidate name").fill("Avery Quinn");
   await page.getByRole("button", { name: "Start practice test" }).click();
-  await expect(page).toHaveURL(/\/test$/);
+  await expect(page).toHaveURL(/\/test\/?$/);
   await expect(page.getByText("Question 1", { exact: false }).first()).toBeVisible();
   const mobileQuestions = page.getByRole("button", { name: "Questions" });
   if (await mobileQuestions.isVisible()) {
@@ -39,10 +41,10 @@ test("submits an incomplete attempt and opens answer review", async ({ page }) =
   }
   await expect(page.getByText("100", { exact: true }).last()).toBeVisible();
   await page.getByRole("button", { name: "Submit test" }).click();
-  await expect(page).toHaveURL(/\/results$/);
+  await expect(page).toHaveURL(/\/results\/?$/);
   await expect(page.getByText("10", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: /Review answers/ }).click();
-  await expect(page).toHaveURL(/\/results\/review$/);
+  await expect(page).toHaveURL(/\/results\/review\/?$/);
   await page.getByRole("button", { name: /Unanswered/ }).click();
   await expect(page.locator(".review-card")).toHaveCount(100);
 });
@@ -64,7 +66,24 @@ test("recovers from a corrupt saved session", async ({ page }) => {
     localStorage.setItem("practice-desk:active-attempt:v1", "{not-valid-json"),
   );
   await page.reload();
-  await expect(page.getByText("Saved practice data could not be read.")).toBeVisible();
+  await expect(page.getByText("Saved data could not be restored.")).toBeVisible();
   await page.getByRole("button", { name: "Clear saved data" }).click();
   await expect(page.getByLabel("Candidate name")).toBeVisible();
+});
+
+test("loads question media from the deployment base path", async ({ page }) => {
+  await page.getByLabel("Candidate name").fill("Media Check");
+  await page.getByRole("button", { name: "Start practice test" }).click();
+  await expect(page).toHaveURL(/\/toeic-practice\/test\/$/);
+
+  const image = page.locator(".question-image img");
+  const imageSource = await image.getAttribute("src");
+  expect(new URL(imageSource!, page.url()).pathname).toMatch(/^\/toeic-practice\/images\/questions\//);
+  await expect.poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(0);
+
+  const audioSource = await page.locator("audio").getAttribute("src");
+  expect(new URL(audioSource!, page.url()).pathname).toMatch(/^\/toeic-practice\/audio\//);
+  const audioResponse = await page.request.get(new URL(audioSource!, page.url()).toString());
+  expect(audioResponse.ok()).toBe(true);
+  expect(audioResponse.headers()["content-type"]).toContain("audio/mpeg");
 });
