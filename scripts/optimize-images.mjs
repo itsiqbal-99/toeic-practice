@@ -3,10 +3,12 @@ import path from "node:path";
 import sharp from "sharp";
 
 const sourceDir = path.resolve(process.argv[2] ?? "tmp/imagegen");
-const outputDir = path.resolve("public/images/questions");
+const outputDir = path.resolve("apps/web/public/images/questions");
 await fs.mkdir(outputDir, { recursive: true });
 
-const files = (await fs.readdir(sourceDir)).filter((file) => file.endsWith(".png"));
+const files = (await fs.readdir(sourceDir)).filter((file) =>
+  file.endsWith(".png"),
+);
 for (const file of files) {
   const output = path.join(outputDir, file.replace(/\.png$/i, ".webp"));
   await sharp(path.join(sourceDir, file))

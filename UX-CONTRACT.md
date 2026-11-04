@@ -1,72 +1,57 @@
-# UX Contract
+# UX contract
 
-## Product context
+Audience: adult English learners. English-only UI. Dates display in the browser locale; all stored timestamps are UTC, and weekly practice starts Monday 00:00 UTC. Accessibility target: WCAG 2.2 AA.
 
-- Audience: adult English learners and test candidates.
-- Primary jobs: start or resume an attempt, answer and review 100 questions, submit deliberately, understand performance.
-- Target market: global English-language MVP.
-- Active locale: `en`.
-- Timezone/calendar policy: timestamps are stored as ISO strings and shown in the browser locale; no calendar workflow.
-- Accessibility target: WCAG 2.2 AA.
+## Route and state ownership
 
-## Business-context sources
+| Capability | Canonical owner |
+|---|---|
+| Dashboard, progress, recent activity | Nest ProgressService; TanStack Query caches public DTOs |
+| Practice configuration | Catalog advertises actual grouped availability after filters |
+| Active question and saved answers | Nest AttemptService; useAttempt preserves one pending local edit |
+| Listening | AudioPlayer, keyed by linked stimulus group |
+| Dialogs and drawers | Shared Radix Dialog with focus restoration |
+| Results and review | Immutable server result and ownership-protected review DTO |
+| Account/targets | Backend identity/session and preferences |
 
-The current user-approved implementation plan is the only authoritative product source. There are no permission, billing, deletion, legal, or external side-effect domains in v1.
-
-## Visual contract
-
-- Project source: `DESIGN.md`.
-- Token ownership: DESIGN.md authored; `src/app/globals.css` is the direct runtime mapping.
-- Supported theme: light only, plus forced-colors compatibility.
-
-## Canonical UI Map
-
-| Capability | Canonical owner | Source of truth | Allowed variants | Verification |
-|---|---|---|---|---|
-| Form | Shared `TextField` and landing form | This contract | candidate start | integration + E2E |
-| Scrollbar | `src/app/globals.css` | `DESIGN.md` | stable-gutter geometry | browser computed style |
-
-Radix Dialog owns every modal and drawer. `Button` owns action emphasis, intent, busy, and disabled states. `TestSessionProvider` owns the active attempt and persistence. `AudioPlayer` owns all listening playback state.
+Root / renders the dashboard. /practice configures focused or quick sessions; /mock-tests configures the shortened mock. /test is a dedicated examination shell. /progress, /review, /account, /results and /results/review use the workspace shell. Results/tests use an opaque attempt query parameter, always checked for ownership on the server.
 
 ## Flow ledger
 
-| Operation | Trigger | Pending | Success destination | Failure recovery | Focus outcome |
-|---|---|---|---|---|---|
-| Start | Start practice test | stable busy button | `/test` | inline name/session error | test heading |
-| Resume | Resume test | stable busy button | `/test` | corrupt-session recovery | test heading |
-| Replace | Start a new test | dialog action busy | `/test` | dialog remains actionable | test heading |
-| Submit | Submit test | stable dialog action | `/results` | dialog remains open | result heading |
-| Review | Review answers | route navigation | `/results/review` | result recovery route | review heading |
+| Action | Pending | Success | Failure and focus |
+|---|---|---|---|
+| Start | Stable busy button | Open saved server attempt | Inline configuration error; preserve selections |
+| Answer | Optimistic selection, local pending record, Saving status | Revision returned, local record removed, Saved status | Keep pending record; Retry save or explicitly use server state |
+| Navigate/mark | Same revision and save boundary | Restore exact index/flags | Conflict cannot silently overwrite another device |
+| Resume | Load saved attempt and pending edit | Exact question and audio policy | Retry or return to dashboard; no data deletion |
+| Submit | Confirm answered/unanswered/marked counts; button busy | Idempotent server score; results route | Keep dialog actionable, display error |
+| Expire | Countdown reaches zero | Server finalizes saved answers at deadline | Retry reads on reconnect; late unsynced answers are not accepted |
+| Review | Fetch only after submission | Filters show original stimuli and explanations | Contextual retry; no premature keys |
+| Google login | Backend state/PKCE/nonce flow | Recognize/create account and rotate session | Safe sign-in error; guest practice remains available |
+| Merge/import | Explicit user action and busy status | Add deduplicated history, preserve originals | Invalid records remain untouched and get actionable error |
 
-## Navigation and responsive behavior
+## Interaction rules
 
-- Titles use `{Page} — Practice Desk`.
-- Missing/corrupt test or result data renders a recovery state with a link to the landing route.
-- Desktop keeps the question navigator in a sticky rail. Below 64rem it becomes a modal right drawer; the same state and labels are preserved.
-- Previous/next controls remain reachable and never cover focused content.
+Position does not imply completion. A learner on Question 80 with no answers has zero answered progress. Radio groups use native arrow/Space behavior, selected letter/check/border and visible focus. A committed immediate-feedback answer is locked; deferred modes reveal keys only after final submission.
 
-## Overlays and feedback
+The desktop answer sheet is persistent; mobile opens it as a modal drawer. Submission closes the navigator first. Confirmation initially focuses Return to test. Escape returns to the initiating control where it remains mounted. Sticky footers never cover the last question or focused controls.
 
-- Radix Dialog provides accessible naming, focus trap, Escape, scroll lock, and focus restoration.
-- Submission is consequential but not destructive: initial focus is Return to test.
-- Replacing an active attempt is destructive to local progress: the dialog names that consequence and initially focuses Keep current test.
-- Layer order: sticky 100, backdrop 500, dialog/drawer 600, toast 900. Submission is never opened over the question drawer.
+Reading documents retain their group. Desktop passages use a readable side column; mobile presents full-width text above associated questions. Listening groups retain one player across linked questions. On unit change, the player unmounts and stops. Media errors are inline and do not prevent answering.
 
-## Async and resilience
+Mock audio is one playback per group without pause/seek/replay; reload/navigation consumes its reservation. The player permits a same-page retry after an actual playback failure. This is disclosed as a practice policy, never a claim of examination security.
 
-- No server mutations exist. Session writes are synchronous local persistence guarded by `try/catch`.
-- One active attempt and one latest result are stored with a schema version. Invalid data is ignored and removed only after showing a recoverable status.
-- Answers persist immediately. Cross-tab storage changes refresh the local snapshot on the next navigation/reload; concurrent editing is not supported.
-- Media errors are scoped inline and never block answering or navigation.
+## Resilience
 
-## Validation
+The database is authoritative. Browser storage contains only one pending edit per attempt and untouched legacy records, never OAuth secrets or application session tokens. Local storage denial produces a visible warning. Network interruption retains the pending edit; a refresh offers retry. A stale revision requires explicit resolution. Beforeunload warns when an edit is unsynced.
 
-- Name validation runs on start, then on change while invalid.
-- The form uses `noValidate`, a visible label, `aria-invalid`, associated correction text, and first-invalid focus.
-- Duplicate starts and submissions are blocked without changing button geometry.
+The server uses ownership predicates, row locks, immutable completed results, content-version references and idempotent submit. No client score is trusted. Guest cookies last 30 days; account sessions support revocation/logout. Google sign-in never silently moves guest attempts.
+
+## Intelligence and truthfulness
+
+All chart points and metrics come from actual stored results. Empty dashboards have no invented statistics. Answered questions and full-result accuracy use clearly distinct denominators. Recommendations use at least five recent answered observations and state the actual reason. History lines separate mode, quotas, count, timing, feedback and imported provenance. Imports do not become comparable assessed results.
+
+No official TOEIC estimate, readiness claim or paid/local AI model is used. A 200-question simulation is unavailable until content quotas can be satisfied without duplication.
 
 ## Verification
 
-- Static: ESLint, TypeScript, Vitest, premium strict audit, DESIGN lint, anti-pattern searches.
-- Browser: Playwright desktop and iPhone 13 profiles, axe, keyboard-only dialogs/navigation, reduced motion, long content, corrupt storage, media errors.
-- Visual: landing, each renderer class, submission, results, and review at narrow and wide widths.
+Preserve legacy generator/scoring/storage/provider regressions. Test current selection, redaction, score integrity, ownership, state/PKCE/nonce, session expiry/logout, consent merge, content import/versioning, conflicts, timers, retry/resume and immutable results against a real PostgreSQL engine. Playwright exercises the integrated app on desktop/mobile Chromium, keyboard, reduced motion, media errors and axe. Record physical-browser and external-credential checks separately.

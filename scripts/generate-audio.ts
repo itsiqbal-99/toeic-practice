@@ -1,10 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { EdgeTTS } from "node-edge-tts";
-import { QUESTION_BANK } from "../src/data/question-bank";
-import type { AudioClip } from "../src/features/test/types";
+import { QUESTION_BANK, type AudioClip } from "@toeic/content";
 
-const outputDir = path.resolve("public/audio");
+const outputDir = path.resolve("apps/web/public/audio");
 const force = process.argv.includes("--force");
 
 function voiceFor(clip: AudioClip): string {
@@ -31,7 +30,9 @@ async function generateClip(clip: AudioClip, output: string): Promise<void> {
       return;
     } catch (error) {
       lastError = error;
-      console.warn(`Retrying ${path.basename(output)} after attempt ${attempt}.`);
+      console.warn(
+        `Retrying ${path.basename(output)} after attempt ${attempt}.`,
+      );
       await new Promise((resolve) => setTimeout(resolve, 1200 * attempt));
     }
   }
@@ -41,7 +42,10 @@ async function generateClip(clip: AudioClip, output: string): Promise<void> {
 async function main() {
   await fs.mkdir(outputDir, { recursive: true });
   const clips = QUESTION_BANK.flatMap((unit) => {
-    if (unit.stimulus.kind === "audio" || unit.stimulus.kind === "image-audio") {
+    if (
+      unit.stimulus.kind === "audio" ||
+      unit.stimulus.kind === "image-audio"
+    ) {
       return unit.stimulus.audio.clips;
     }
     return [];
@@ -53,7 +57,9 @@ async function main() {
       try {
         const stat = await fs.stat(output);
         if (stat.size > 1000) {
-          console.log(`[${index + 1}/${clips.length}] kept ${path.basename(output)}`);
+          console.log(
+            `[${index + 1}/${clips.length}] kept ${path.basename(output)}`,
+          );
           continue;
         }
       } catch {
@@ -62,7 +68,9 @@ async function main() {
     }
 
     await generateClip(clip, output);
-    console.log(`[${index + 1}/${clips.length}] wrote ${path.basename(output)} (${clip.speaker})`);
+    console.log(
+      `[${index + 1}/${clips.length}] wrote ${path.basename(output)} (${clip.speaker})`,
+    );
   }
 
   console.log(`Generated ${clips.length} bundled audio clips in ${outputDir}.`);

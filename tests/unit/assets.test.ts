@@ -6,7 +6,7 @@ import { APP_BASE_PATH } from "@/config/app";
 
 function publicFile(source: string): string {
   const relativeSource = source.slice(APP_BASE_PATH.length).replace(/^\//, "");
-  return path.join(process.cwd(), "public", relativeSource);
+  return path.join(process.cwd(), "apps/web/public", relativeSource);
 }
 
 describe("bundled question media", () => {

@@ -1,0 +1,18 @@
+{
+  "extends": "../apps/web/tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "incremental": false,
+    "baseUrl": "..",
+    "paths": {
+      "@/data/question-bank": ["packages/content/src/question-bank.ts"],
+      "@/config/app": ["packages/content/src/app.ts"],
+      "@/features/test/*": ["packages/content/src/*"],
+      "@/*": ["apps/web/src/*"]
+    },
+    "types": ["node", "vitest/globals", "@testing-library/jest-dom"]
+  },
+  "include": ["./**/*.ts", "./**/*.tsx"],
+  "exclude": ["../node_modules"]
+}

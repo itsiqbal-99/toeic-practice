@@ -8,3 +8,11 @@ premium-audit.json
 .DS_Store
 *.log
 tmp/
+.rebuild/
+.local-db/
+.env
+.env.*
+!.env.example
+dist/
+*.tsbuildinfo
+.superdesign/tmp/

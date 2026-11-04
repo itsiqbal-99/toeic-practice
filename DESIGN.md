@@ -1,116 +1,46 @@
----
-version: alpha
-name: "Practice Desk"
-description: "A calm professional English examination desk with the precision of a paper answer sheet."
-colors:
-  ink: "#142A33"
-  muted: "#5C6E75"
-  mineral: "#F2F6F6"
-  paper: "#FFFFFF"
-  teal: "#0D686E"
-  success: "#2F765C"
-  review: "#B67622"
-  danger: "#B34848"
-typography:
-  sans:
-    fontFamily: "IBM Plex Sans, Arial, sans-serif"
-  reading:
-    fontFamily: "Source Serif 4, Georgia, serif"
-  mono:
-    fontFamily: "IBM Plex Mono, Consolas, monospace"
-rounded:
-  sm: "0.375rem"
-  DEFAULT: "0.625rem"
-  lg: "1rem"
-spacing:
-  control: "0.75rem"
-  panel: "1.5rem"
-  section: "2.5rem"
-  page-max: "90rem"
-components:
-  button:
-    height: "2.75rem"
-  input:
-    height: "3rem"
-  card:
-    radius: "1rem"
-  dialog:
-    maxWidth: "32rem"
----
+# TOEIC Practice workspace design
 
-# Practice Desk Design System
+## Direction
 
-## Overview
+A light editorial learning workspace for adults studying workplace English. The root is a useful personal desk with authentic observations and immediate study actions. It has no promotional landing page, artificial achievements or fabricated charts.
 
-### Creative North Star
+## Foundation
 
-Practice Desk should feel like sitting at a well-organized professional testing station: cool mineral surfaces, a crisp paper examination sheet, precise labels, and a visible answer grid. The interface is focused enough for a long session without feeling institutional or severe.
+The authored tokens map to apps/web/src/app/globals.css: porcelain #F8F7F3, white paper, charcoal #1D2433, slate #626C7C, cobalt #4258D6, pale cobalt #EDF0FF, apricot #F2AE8E, neutral border #E5E7ED, positive #286B50 and error #A43B40. Apricot identifies a supporting next-step panel. Cobalt identifies the primary action, selection and current navigation.
 
-### Product context and register
+Manrope is served locally at weights 400–700. Source Serif 4 is reserved for reading passages. Question text is 17–18px; passage text is 16px with generous line spacing. Large metrics use tabular numbers. Small labels carry supplementary context rather than essential instructions.
 
-- **Audience and primary job:** Adult English learners completing an independent Listening and Reading practice assessment and understanding the result.
-- **Target market and evidence:** Global English-language MVP, defined by the product brief; no market-specific business behavior.
-- **Locale and language policy:** English-only UI and original English test content in v1.
-- **Usage scene:** Primarily laptop/desktop for a 60–75 minute practice session, with a complete mobile adaptation.
-- **Register:** Product-first. The landing route may introduce the test, but it remains a candidate briefing rather than a marketing campaign.
-- **Memorable signature:** The numbered answer-sheet grid, whose filled, current, and review-ring states remain consistent throughout the attempt.
-- **Restraint:** Questions, passages, answer choices, and media controls use familiar examination patterns with minimal motion.
-- **Anti-references:** No classroom gamification, generic admin dashboard, glass panels, decorative gradients, or chart-heavy score reporting.
-- **Token ownership/runtime mapping:** This file is the authored source. Exact values map one-to-one to custom properties in `src/app/globals.css`; shared components consume semantic variables only.
+Desktop uses a 228px sidebar, consistent working width and restrained white panels. Mobile has compact top controls, a five-item bottom navigation and an accessible drawer for account/full navigation. Larger panels have 12px corners; controls use 6–8px. Borders supply hierarchy; shadows are reserved for dialogs and the small diagnostic document illustration.
 
-## Colors
+## Components and states
 
-Ink and muted blue-gray carry text hierarchy. Mineral is the application ground and paper is the reading surface. Teal is reserved for the current/primary path, green means answered or positive, amber means marked for review, and red is limited to errors. Current, answered, and review states always include shape or text in addition to color.
+- Button owns solid, outline and ghost emphasis, busy dimensions, disabled state and focus treatment. Icon controls have accessible names.
+- Radix Dialog owns modal semantics, focus trapping, Escape and restoration for drawers and submission. The first submit-dialog action returns to the test.
+- FetchState handles stable skeleton loading and contextual retry errors. Empty states explain what data is needed and offer a relevant next action.
+- MetricBar shows correct/total and accuracy. Early samples explicitly say that recommendations need five observations.
+- HistoryChart loads only when needed, separates configuration cohorts, excludes imports, and offers an accessible data table.
+- Native labeled selects, inputs, radio groups and switches keep familiar keyboard behavior. Answers retain constant geometry and a clear check/letter/border state.
 
-## Typography
+## Workspace
 
-IBM Plex Sans owns navigation, instructions, controls, and explanatory copy. Source Serif 4 is reserved for passages and document-like stimuli. IBM Plex Mono carries question indices, compact metrics, and score data. Passage measure is capped near 70 characters with generous line height; control labels use sentence case.
+The dashboard shows actual completed sessions, answered questions, accuracy, UTC weekly practice, resume state, performance cohorts, deterministic recommendations, targets, skills and activity. A first-time guest sees zeros, an unmeasured accuracy dash and useful diagnostic/practice actions.
 
-## Layout
+The diagnostic is a compact action surface with an editorial paper motif. It never stands in for learner data. Supporting copy is concise and functional. Charts show no fictional points.
 
-The application uses a centered 90rem working area. The active test pairs a flexible examination surface with a 20rem answer-sheet rail at wide widths. At narrow widths the rail becomes a modal drawer and the actions become a safe-area-aware sticky bar. Media dimensions, feedback, scrollbars, and sticky controls reserve space to prevent reflow.
+## Examination
 
-## Elevation & Depth
+The exam has a separate shell: compact header, answered progress, a readable main question, desktop answer sheet and fixed safe-area footer. Question position and answered count remain separate. Navigation cells identify current/answered/marked states through labels and shape as well as color.
 
-Hierarchy comes primarily from tonal surfaces and borders. Static cards use one restrained shadow; raised overlays use a deeper neutral shadow and an opaque backdrop. Blur and glass effects are forbidden.
+Listening uses one consistent player, recovery messages and an explicit per-mode policy. Reading uses a sticky passage alongside questions on desktop, natural full-width documents on mobile, and distinct labels for multiple documents. The footer leaves sufficient scroll space for the last answer.
 
-## Shapes
+Results foreground accuracy and correct/incorrect/unanswered counts. Review progressively reveals explanation and original stimuli, with state, part and skill filters and a direct practice action.
 
-Controls use a 0.625rem working radius and larger panels use 1rem. Answer-sheet buttons are near-circular but retain enough width for two- and three-digit numbers. Dividers are crisp one-pixel strokes.
+## Motion
 
-## Components
+Motion for React owns short route entry and active-navigation transitions. CSS owns hover, selected controls, metric progress, dialogs/drawers, loading and completion feedback. Most changes last 140–350ms. Timed mock controls suppress selection/progress transitions. Reduced motion is honored by MotionConfig and a global media query; focus and semantic state do not depend on animation. Browser accessibility scans wait for finite entry animations to settle.
 
-### Foundational visual states
+## Responsive and accessibility rules
 
-Every target defines default, hover, focus-visible, pressed, disabled, busy, selected/current, success, review, and error behavior where applicable. Focus uses a two-pixel teal ring with offset. Loading uses a stable inline spinner; skeletons are not part of v1.
+At 960px the sidebar becomes mobile navigation and the answer sheet becomes a drawer. At 650px the dashboard is recomposed for narrow reading, metrics remain a useful 2×2 group, passage/questions stack, and action bars respect safe areas.
 
-### Buttons and actions
-
-Buttons combine solid/outline/ghost emphasis with brand/neutral/danger intent. Each decision area has one solid primary action. Busy controls preserve dimensions. Icon-only buttons require accessible names.
-
-### Navigation and data display
-
-The answer-sheet grid is the canonical question navigator. Desktop keeps it visible; mobile opens the same component in a right-side modal drawer. Score breakdowns use labeled horizontal meters rather than chart chrome.
-
-### Forms and overlays
-
-Fields use visible labels, app-owned inline validation, and stable error space. Product forms use `noValidate`. Radix Dialog is the canonical modal owner for submission, attempt replacement, and mobile navigation, with focus containment, Escape handling, inert background, and restoration.
-
-### Iconography
-
-Lucide is the sole icon family, using 1.75px strokes at 18–20px. Icons support labels rather than replacing unfamiliar actions.
-
-### Motion
-
-Motion is limited to 160–220ms color, opacity, and short overlay transitions. It communicates selection and layer changes; reduced-motion removes transforms and shortens fades.
-
-### Content and data visualization
-
-Copy is direct, calm, and candidate-facing. Actions describe their outcome: “Start practice test”, “Submit test”, and “Return to test”. Scores always say “Estimated” and meters include numeric text.
-
-## Do's and Don'ts
-
-- **Do:** Keep the answer sheet visible or one action away throughout the attempt.
-- **Do:** Preserve passage readability and stable controls during long sessions.
-- **Don't:** turn assessment progress into rewards, streaks, confetti, or decorative animation.
-- **Don't:** use color alone to distinguish answer, review, or error states.
+Every interactive control has keyboard focus. Information never depends solely on color. Contrast uses readable semantic colors; screen readers get answer progress, save state and dialog names. Automated WCAG 2.2 checks supplement keyboard and visual checks; they do not establish universal assistive-technology certification.
